@@ -23,9 +23,11 @@ public class GameController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI monsterHealth;
     [SerializeField] private TextMeshProUGUI heroCost;
     [SerializeField] private TextMeshProUGUI incomeUI;
+    [SerializeField] private TextMeshProUGUI dpsUI;
 
 
     int heroCount = 0;
+    private int heroLv = 1;
     [SerializeField] private float baseDam = 0;
 
     //money
@@ -52,7 +54,7 @@ public class GameController : MonoBehaviour
         SpawnMonster(null);
         monsterHealth.text = currentMobHealth.ToString();
         heroCost.text = baseCost.ToString();
-
+        
     }
 
     // Update is called once per frame
@@ -63,6 +65,7 @@ public class GameController : MonoBehaviour
         incomeUI.text = income.ToString()+"/s";
         if (timeSinceLastIncrease >= 0.1f)
         {
+            
             //Increase money and deal damage  per 0.1 sec
             money += income*0.1f;
             timeSinceLastIncrease = 0f;
@@ -102,7 +105,7 @@ public class GameController : MonoBehaviour
             money -= baseCost;
             income += 100;
             baseCost *= 5;
-            baseDam += 20;
+            UpdateDamage();
             heroCost.text= baseCost.ToString();
         }
         
@@ -122,7 +125,7 @@ public class GameController : MonoBehaviour
                     waveUI.text = "Boss " + waveMulti.ToString();
                 }
                 currentMob = Instantiate(bossPrefab, mobSlot);
-                currentMobHealth = (baseMobHealth * 10) * waveMulti;
+                currentMobHealth = 100 * waveMulti * waveMulti * Random.Range(4, 7);
                 isBoss = true;
             }
              
@@ -133,7 +136,7 @@ public class GameController : MonoBehaviour
                 waveMulti=waveMulti+1;
                 waveUI.text = "Wave " + waveMulti.ToString();
                 currentMob = Instantiate(bossPrefab, mobSlot);
-                currentMobHealth = (baseMobHealth + Random.Range(10, 100)) * waveMulti;
+                currentMobHealth = 100 * waveMulti * waveMulti;
 
             }
             
@@ -150,9 +153,20 @@ public class GameController : MonoBehaviour
                 monsterKilled = 0;
             }
             currentMob= Instantiate(mobPrefab, mobSlot);
-            currentMobHealth = (baseMobHealth + Random.Range(10, 100)) * waveMulti;
+            currentMobHealth = 100 * waveMulti * waveMulti;
         }
         
     }
-    
+
+    public void UpgradeHero()
+    {
+        heroLv += 1;
+        UpdateDamage();
+    }
+
+    private void UpdateDamage()
+    {
+        baseDam = 3 * (heroLv * 2) * heroCount;
+        dpsUI.text = baseDam.ToString() + " /s";
+    }
 }
