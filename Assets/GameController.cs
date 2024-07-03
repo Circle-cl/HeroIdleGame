@@ -7,34 +7,48 @@ using UnityEngine;
 public class GameController : MonoBehaviour
 {
     List<Hero> heroList;
+    //prefabs
+    [SerializeField] private GameObject mobPrefab;
+    [SerializeField] private GameObject bossPrefab;
     [SerializeField] private GameObject heroPrefab;
+
+    //Spawn Slot
     [SerializeField] private List<Transform> heroSlot;
     [SerializeField] private Transform mobSlot;
 
-    [SerializeField] private GameObject mobPrefab;
-    [SerializeField] private GameObject bossPrefab;
-
+   
+    //UI Element
     [SerializeField] private TextMeshProUGUI moneyUI;
     [SerializeField] private TextMeshProUGUI waveUI;
     [SerializeField] private TextMeshProUGUI monsterHealth;
     [SerializeField] private TextMeshProUGUI heroCost;
     [SerializeField] private TextMeshProUGUI incomeUI;
+
+
     int heroCount = 0;
+    [SerializeField] private float baseDam = 0;
+
+    //money
     public float money = 100;
     private float baseCost = 100;
     private float income = 0;
     private float timeSinceLastIncrease = 0f;
-    [SerializeField]private float baseDam = 0;
+    
+
+    //mobstats
+    private bool isBoss = false;
+    private float monsterKilled = 0;
     private float baseMobHealth = 100;
     private float currentMobHealth=100;
     [SerializeField]private int   waveMulti=1;
-    private float monsterKilled = 0;
-    private bool isBoss = false;
+    
+    
     
     private GameObject currentMob;
     // Start is called before the first frame update
     void Start()
     {
+        //Spawn first mob
         SpawnMonster(null);
         monsterHealth.text = currentMobHealth.ToString();
         heroCost.text = baseCost.ToString();
@@ -49,6 +63,7 @@ public class GameController : MonoBehaviour
         incomeUI.text = income.ToString()+"/s";
         if (timeSinceLastIncrease >= 0.1f)
         {
+            //Increase money and deal damage  per 0.1 sec
             money += income*0.1f;
             timeSinceLastIncrease = 0f;
             
@@ -59,7 +74,7 @@ public class GameController : MonoBehaviour
         {
             if (isBoss)
             {
-            
+                //Spawn after boss is defeted
                 GameObject.Destroy(currentMob);
                 SpawnMonster(false);
             
@@ -67,7 +82,7 @@ public class GameController : MonoBehaviour
             }
             else
             {
-            
+                //Spawn monster and boss
                 GameObject.Destroy(currentMob);
                 SpawnMonster(null);
 
@@ -79,7 +94,8 @@ public class GameController : MonoBehaviour
     
     public void SpawnHero()
     {
-        if (money >= baseCost)
+        //buy new Hero
+        if (money >= baseCost&& heroCount<12)
         {
             Instantiate(heroPrefab, heroSlot[heroCount].position,Quaternion.identity);
             heroCount++;
@@ -97,6 +113,7 @@ public class GameController : MonoBehaviour
         {
             if(!isBoss)
             {
+                //Spawn boss
                 monsterKilled++;
                 money += baseMobHealth * 10 * waveMulti;
                 if (monsterKilled >= 10)
@@ -111,7 +128,7 @@ public class GameController : MonoBehaviour
              
             else
             {
-
+                //spawn normal mob
                 isBoss = false;
                 waveMulti=waveMulti+1;
                 waveUI.text = "Wave " + waveMulti.ToString();
@@ -123,6 +140,7 @@ public class GameController : MonoBehaviour
         }
         else
         {
+            //spawn normal mob
             monsterKilled++;
             money += baseMobHealth * waveMulti;
             if (monsterKilled >= 10)
