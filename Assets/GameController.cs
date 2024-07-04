@@ -33,8 +33,8 @@ public class GameController : MonoBehaviour
     [SerializeField] private float baseDam = 0;
 
     //money
-    public float money = 5000;
-    private float baseCost = 5000;
+    public float money = 0;
+    private float baseCost = 0;
     private float income = 0;
     private float timeSinceLastIncrease = 0f;
     
@@ -56,7 +56,7 @@ public class GameController : MonoBehaviour
         instance = this;
         //Spawn first mob
         SpawnMonster(null);
-        money = 5000; 
+       
         monsterHealth.text = currentMobHealth.ToString();
         heroCost.text = baseCost.ToString();
         
@@ -105,12 +105,20 @@ public class GameController : MonoBehaviour
         //buy new Hero
         if (money >= baseCost&& heroCount<12)
         {
+            
             HeroScript hero = Instantiate(heroPrefab, heroSlot[heroCount].position, Quaternion.identity).GetComponent<HeroScript>();
             heroList.Add(hero);
             heroCount++;
             money -= baseCost;
+            if (heroCount == 1)
+            {
+                baseCost = 5000;
+            }
+            else
+            {
+                baseCost *= 1.55f;
+            }
             
-            baseCost *= 1.55f;
             UpdateIncome();
             UpdateDamage();
             heroCost.text= baseCost.ToString();
@@ -187,13 +195,13 @@ public class GameController : MonoBehaviour
     public void UpgradeDam()
     {
         //upgrade percentage damge
-        int cost= (int)(heroLv *Mathf.Log(heroLv/10f) + 100);
+        int cost= (int)(heroLv *Mathf.Log10(heroLv/10f) + 100);
         if(cost<money)
         {
             money-= cost;
             damlevel++;
         }
-        
+        UpdateDamage();
     }
     public void UpdateIncome()
     {
