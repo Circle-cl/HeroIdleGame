@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8338035540586091480}
   - component: {fileID: 494714235964106039}
   - component: {fileID: 4445399050570368799}
+  - component: {fileID: 8305470786752867648}
   m_Layer: 0
   m_Name: Hero
   m_TagString: Untagged
@@ -97,3 +98,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ba5bbc3f2f6c174e895c73db9f50d31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  level: 0
+  income: 0
+  damage: 0
+--- !u!65 &8305470786752867648
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3603348667771893371}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.99999994, y: 0.99999994, z: 0.19999999}
+  m_Center: {x: 0, y: 0, z: 0}

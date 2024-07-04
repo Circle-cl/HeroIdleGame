@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
+
 using TMPro;
 using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
-    List<Hero> heroList;
+    public static GameController instance;
+    List<HeroScript> heroList;
     //prefabs
     [SerializeField] private GameObject mobPrefab;
     [SerializeField] private GameObject bossPrefab;
@@ -28,11 +29,12 @@ public class GameController : MonoBehaviour
 
     int heroCount = 0;
     private int heroLv = 1;
+    private int damlevel = 0;
     [SerializeField] private float baseDam = 0;
 
     //money
-    public float money = 100;
-    private float baseCost = 100;
+    public float money = 5000;
+    private float baseCost = 5000;
     private float income = 0;
     private float timeSinceLastIncrease = 0f;
     
@@ -50,8 +52,11 @@ public class GameController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        heroList = new List<HeroScript>();
+        instance = this;
         //Spawn first mob
         SpawnMonster(null);
+        money = 5000; 
         monsterHealth.text = currentMobHealth.ToString();
         heroCost.text = baseCost.ToString();
         
@@ -60,7 +65,7 @@ public class GameController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        moneyUI.text =money.ToString();
+        moneyUI.text =money.ToString("0");
         timeSinceLastIncrease += Time.deltaTime;
         incomeUI.text = income.ToString()+"/s";
         if (timeSinceLastIncrease >= 0.1f)
@@ -100,11 +105,13 @@ public class GameController : MonoBehaviour
         //buy new Hero
         if (money >= baseCost&& heroCount<12)
         {
-            Instantiate(heroPrefab, heroSlot[heroCount].position,Quaternion.identity);
+            HeroScript hero = Instantiate(heroPrefab, heroSlot[heroCount].position, Quaternion.identity).GetComponent<HeroScript>();
+            heroList.Add(hero);
             heroCount++;
             money -= baseCost;
-            income += 100;
-            baseCost *= 5;
+            
+            baseCost *= 1.55f;
+            UpdateIncome();
             UpdateDamage();
             heroCost.text= baseCost.ToString();
         }
@@ -118,14 +125,17 @@ public class GameController : MonoBehaviour
             {
                 //Spawn boss
                 monsterKilled++;
-                money += baseMobHealth * 10 * waveMulti;
+                
+                
                 if (monsterKilled >= 10)
                 {
                     waveMulti++;
                     waveUI.text = "Boss " + waveMulti.ToString();
                 }
                 currentMob = Instantiate(bossPrefab, mobSlot);
-                currentMobHealth = 100 * waveMulti * waveMulti * Random.Range(4, 7);
+                baseMobHealth = waveMulti * waveMulti * Mathf.Log10(waveMulti) + 150 * Random.Range(1, 3);
+                money += Mathf.Pow(baseMobHealth,0.33f)*100;
+                currentMobHealth = baseMobHealth;
                 isBoss = true;
             }
              
@@ -136,7 +146,8 @@ public class GameController : MonoBehaviour
                 waveMulti=waveMulti+1;
                 waveUI.text = "Wave " + waveMulti.ToString();
                 currentMob = Instantiate(bossPrefab, mobSlot);
-                currentMobHealth = 100 * waveMulti * waveMulti;
+                baseMobHealth= waveMulti * waveMulti * Mathf.Log10(waveMulti) + 150;
+                currentMobHealth = baseMobHealth;
 
             }
             
@@ -145,7 +156,7 @@ public class GameController : MonoBehaviour
         {
             //spawn normal mob
             monsterKilled++;
-            money += baseMobHealth * waveMulti;
+            
             if (monsterKilled >= 10)
             {
                 waveMulti++;
@@ -153,20 +164,59 @@ public class GameController : MonoBehaviour
                 monsterKilled = 0;
             }
             currentMob= Instantiate(mobPrefab, mobSlot);
-            currentMobHealth = 100 * waveMulti * waveMulti;
+            baseMobHealth= waveMulti * waveMulti * Mathf.Log10(waveMulti) + 150;
+            money += Mathf.Pow(baseMobHealth, 0.33f) * 50;
+            currentMobHealth = baseMobHealth;
         }
         
     }
 
-    public void UpgradeHero()
+    public void UpgradeHero(int level)
     {
-        heroLv += 1;
-        UpdateDamage();
+           //subtract money after hero level up
+           
+        
+            money -= (level * level % 12f + 150 * level);
+            
+            UpdateIncome();
+            UpdateDamage();
+        
+        
     }
 
-    private void UpdateDamage()
+    public void UpgradeDam()
     {
-        baseDam = 3 * (heroLv * 2) * heroCount;
+        //upgrade percentage damge
+        int cost= (int)(heroLv *Mathf.Log(heroLv/10f) + 100);
+        if(cost<money)
+        {
+            money-= cost;
+            damlevel++;
+        }
+        
+    }
+    public void UpdateIncome()
+    {
+        // set income
+        float temp = 0;
+        Debug.Log(temp);
+        foreach(var item in heroList) {
+            Debug.Log("income"+item.income);
+            temp += item.income;
+        }
+        income = temp;
+    }
+    public void UpdateDamage()
+    {
+        //set damage
+        int temp = 0;
+        foreach(var item in heroList)
+        {
+            temp += (int)item.damage;
+            
+        }
+        baseDam = temp+ temp * damlevel * 0.1f;
+        Debug.Log(baseDam);
         dpsUI.text = baseDam.ToString() + " /s";
     }
 }
